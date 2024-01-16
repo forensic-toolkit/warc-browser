@@ -1,4 +1,3 @@
-
 package warcbrowser
 
 import (
@@ -115,7 +114,7 @@ func warcWriterRoutine(wrc *gowarc.WarcFileWriter, r chan gowarc.WarcRecord){
 			break
 		}
 		fl := wrc.Write(record)
-		log.Debug().Str("Warc.RecordId", record.RecordId()).Str("Output", fl[0].FileName).Msg("Written successfully")
+		log.Info().Str("Warc.RecordId", record.RecordId()).Str("Output", fl[0].FileName).Msg("Written successfully")
 	}
 }
 
@@ -201,12 +200,12 @@ func ArchivePage(warcwriter *gowarc.WarcFileWriter, page *rod.Page, url string, 
 	switch {
 	// case err.Reason == "net::ERR_ABORTED": //
 	case errors.Is(err, &rod.ErrNavigation{}):
-		log.Debug().Str("Url", url).Str("Browser", "rod").Str("mode", mode).Msg(err.Error())
+		log.Debug().Str("Url", url).Str("mode", mode).Msg(err.Error())
 	case err != nil:
-		log.Warn().Str("Url", url).Str("Browser", "rod").Str("mode", mode).Msg(err.Error())
+		log.Warn().Str("Url", url).Str("mode", mode).Msg(err.Error())
 		return err	
 	}
-	log.Info().Str("Url", url).Str("Browser", "rod").Str("mode", mode).Msg("Archived")
+	log.Info().Str("Url", url).Str("mode", mode).Msg("Archived")
 	return nil
 }
 
@@ -283,8 +282,9 @@ func ArchiveHijack() (chan gowarc.WarcRecord, func(ctx *rod.Hijack)) {
 			gowarc.WithStrictValidation())
 
 		// Add Warc Record headers
-		builder.AddWarcHeader(gowarc.WarcTargetURI, ctx.Request.URL().String())
-		builder.AddWarcHeader(gowarc.ContentType,   ctx.Response.Headers().Get("Content-Type") + ";msgtype=response" )
+		builder.AddWarcHeader(gowarc.WarcTargetURI, ctx.Request.URL().String())		
+		builder.AddWarcHeader(gowarc.WarcIdentifiedPayloadType, ctx.Response.Headers().Get("Content-Type"))
+		builder.AddWarcHeader(gowarc.ContentType,   "application/http;msgtype=response" )
 		builder.AddWarcHeaderTime(gowarc.WarcDate,  time.Now())
 
 		// Write Status Line
@@ -304,11 +304,11 @@ func ArchiveHijack() (chan gowarc.WarcRecord, func(ctx *rod.Hijack)) {
 		// Build warc record
 		wr, _, err := builder.Build()
 		if err != nil {
-			log.Warn().Str("Browser", "rod").Str("Url", ctx.Request.URL().String()).Msg("Failed to build record")
-			log.Debug().Str("Browser", "rod").Str("Url", ctx.Request.URL().String()).Msg(err.Error())
+			log.Warn().Str("Url", ctx.Request.URL().String()).Msg("Failed to build record")
+			log.Debug().Str("Url", ctx.Request.URL().String()).Msg(err.Error())
 		} else {
 			records <- wr
-			log.Info().Str("Browser", "rod").Str("Url", ctx.Request.URL().String()).Msg("Downloaded")
+			log.Info().Str("Url", ctx.Request.URL().String()).Msg("Downloaded")
 		}
 	}
 }

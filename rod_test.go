@@ -61,7 +61,8 @@ func retrieveRecordedContent(t *testing.T, warcpath, outpath, mime string)  {
 		default:
 			require.True(t, record.Type().String() == "response" )
 			t.Log("WARC.Record.Content-Type:" + record.WarcHeader().Get(gowarc.ContentType))
-			require.True(t, record.WarcHeader().Get(gowarc.ContentType) == mime + ";msgtype=response" )
+			require.True(t, record.WarcHeader().Get(gowarc.ContentType) == "application/http;msgtype=response")
+			require.True(t, record.WarcHeader().Get(gowarc.WarcIdentifiedPayloadType) == mime)
 
 			r, err := record.Block().RawBytes()
 			require.Nil(t, err)

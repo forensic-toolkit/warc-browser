@@ -50,7 +50,6 @@ func main() {
                 Aliases: []string{"br"},
                 Usage: "work with browsers",
 				Flags: []cli.Flag{
-					&cli.StringFlag{Name:"type", Value:"rod",Usage:"type of browser wrapper to use [rod|playwright]",},
 					&cli.StringFlag{Name:"attach-to", Value:"http://localhost:9222",Usage:"address of running browser to connect to",},
 					&cli.BoolFlag{Name:"attach", Aliases:[]string{"a"},Value:false,Usage:"attach to existing browser",},
 					&cli.BoolFlag{Name:"headless", Value:false,Usage:"Run browser in headless mode. Only for new browsers",},
@@ -76,17 +75,13 @@ func main() {
 									}),
 									gowarc.WithFileNameGenerator(generator))
                     
-					switch ctx.String("type") {
-					case "rod":
-						browser, err = warcbrowser.LaunchRodBrowser(
-											warcwriter,
-											ctx.Bool("attach"),
-											ctx.String("attach-to"),
-											ctx.Bool("headless"),)
-						return err
-					}
-					return fmt.Errorf("Unknown browser") 
-                },
+					browser, err = warcbrowser.LaunchRodBrowser(
+										warcwriter,
+										ctx.Bool("attach"),
+										ctx.String("attach-to"),
+										ctx.Bool("headless"),)
+					return err
+				},
 				Action: func(ctx *cli.Context) error {
 					if ctx.Bool("attach") {
 						for _, t := range browser.ListTabs("") {
@@ -151,17 +146,17 @@ func main() {
 				},
 			},
 			{
-                Name:    "daemon",
-                Usage:   "Start daemon",
+                Name:    "ui",
+                Usage:   "Start UI to view collected archives",
 				Flags: []cli.Flag{
 					&cli.StringFlag{
 						Name:  "address",
 						Value: ":8080",
-						Usage: "specify address to bind to",
+						Usage: "specify address to bind server to",
 					},
 				},
                 Action: func(ctx *cli.Context) error {
-					fmt.Fprintf(ctx.App.ErrWriter, "Listening on %s\n", ctx.String("address"))
+					fmt.Fprintf(ctx.App.ErrWriter, "Listening on '%s' and serving warcs from '%s' directory\n", ctx.String("address"), ctx.String("output-dir"))
                     return http.ListenAndServe(
 								ctx.String("address"),
 								handlers.LoggingHandler(os.Stdout, 
