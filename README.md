@@ -1,6 +1,6 @@
 # warc-browser
 
-a cli toolkit for work with web archives.
+a cli toolkit for working with web archives.
 
 warc-browser uses *DevTools* protocol to automate compatible web browsers, captures all content for given wep page (html, css, js, images, videos, pdfs, ...) and stores the results in *[.warc][warc-doc]* file. It came out of need for quickly archiving web pages in a scriptable manner. 
   
@@ -31,7 +31,7 @@ warc-browser browser -a
 warc-browser browser -a archive -t 0
 ```
 
-Start a web server serving simple ui, to visualize your collected archives.
+Start a web server serving simple ui, to visualize collected archives.
 
 ```bash
 warc-browser ui
@@ -49,7 +49,7 @@ software used
 
 
 ```
-coverage: 60.8% of statements
+coverage: 61.2% of statements
 ```
 
 [nlnwa/gowarc]: https://github.com/nlnwa/gowarc
