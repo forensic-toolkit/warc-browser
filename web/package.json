@@ -5,11 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "cp node_modules/replaywebpage/*.js public/replay/ && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
-    "vue": "^3.3.11"
+    "@mdi/font": "^7.4.47",
+    "replaywebpage": "^1.8.14",
+    "vue": "^3.3.11",
+    "wave-ui": "^3.9.2"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^4.5.2",

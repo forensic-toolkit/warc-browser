@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"fmt"
 	"strings"
+	"log"
 
 	"github.com/gorilla/mux"
 	// "github.com/jasonwbarnett/fileserver"
@@ -26,11 +27,19 @@ type archiveHandler struct {
 }
 
 func (h archiveHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	// Access-Control-Allow-Origin
+	// development
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
+	
 	// Join internally call path.Clean to prevent directory traversal
 	path := filepath.Join(h.staticPath, strings.TrimPrefix(r.URL.Path,"/archives/") )
+	
 	// check whether a file exists or is a directory at the given path
 	fi, err := os.Stat(path)
+	
 	if os.IsNotExist(err) || fi.IsDir() {
+		log.Printf("Listing [%s] %s ", h.staticPath, path)
+
 		// file does not exist or path is a directory, so we list it and serve it as
 		// json list to be used by vue app
 		files, err := os.ReadDir(path)
@@ -39,18 +48,28 @@ func (h archiveHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		w.Write([]byte(`{"error":null, "records":[`))
-		for _, fl := range files {
-			w.Write([]byte( fmt.Sprintf(`{"name":"%s","type":"%v"}`, fl.Name(), fl.IsDir())))
+		for i, fl := range files {
+			w.Write([]byte(
+				fmt.Sprintf(`{"label":"%s","branch":%v,"url":"/%s","path":"%s"}`,
+								fl.Name(),
+								fl.IsDir(),
+								filepath.Join(path, fl.Name()), 
+								filepath.Join(path, fl.Name()), )))
+			if i < len(files) - 1 {
+				w.Write([]byte(","))
+			}
 		}
 		w.Write([]byte(`]}`))
 		return
 	}
+
 	if err != nil {
 		w.Write([]byte( fmt.Sprintf(`{"error":"%s","records":[]}`, err.Error() ) ))
         return
 	}
-	// otherwise, use http.FileServer to serve the static file
-	http.FileServer(http.Dir(h.staticPath)).ServeHTTP(w, r)
+
+	// otherwise, serve warc file
+	http.ServeFile(w, r, path)
 }
 
 func App(archivesdir string ) http.Handler {

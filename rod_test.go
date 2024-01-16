@@ -136,7 +136,7 @@ func TestFiles(t *testing.T) {
 
 		t.Run("test pdf", func(t *testing.T) {
 			err := createWarcRecord(t, dir, "example.pdf", s.URL + "/example.pdf")
-			require.True(t, err != nil)
+			require.Nil(t, err)
 			retrieveRecordedContent(t,  dir + "/example.pdf.warc", dir + "/example.pdf", "application/pdf")
 		})
 
